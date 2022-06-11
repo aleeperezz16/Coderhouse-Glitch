@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario Backend</title>
+</head>
+<body>
+  <h1>Ingresar producto</h1>
+  <form action="/nuevoProducto" method="post">
+    <div>
+      <label for="nombreProducto">Nombre</label><br />
+      <input type="text" name="title" id="nombreProducto">
+    </div>
+    <div>
+      <label for="precioProducto">Precio</label><br />
+      <input type="text" name="price" id="precioProducto">
+    </div>
+    <div>
+      <label for="linkImagen">URL Imagen</label><br />
+      <input type="text" name="thumbnail" id="linkImagen">
+    </div>
+    <br />
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+</html>
