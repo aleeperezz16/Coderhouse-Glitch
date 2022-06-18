@@ -1,0 +1,36 @@
+extends layouts/main
+
+block formulario
+  div(class="container bg-secondary bg-opacity-25 p-5 w-25")
+    h1(class="text-primary mb-5") Ingresar producto
+    form(action="/productos", method="post")
+      div(class="form-floating mb-3")
+        input(
+          name="title",
+          type="text",
+          class="form-control",
+          id="floatingNombre",
+          placeholder="Nombre"
+        )
+        label(for="floatingNombre") Nombre
+      div(class="form-floating mb-3")
+        input(
+          name="price",
+          type="text",
+          class="form-control",
+          id="floatingPrecio",
+          placeholder="Precio"
+        )
+        label(for="floatingPrecio") Precio
+      div(class="form-floating mb-3")
+        input(
+          name="thumbnail",
+          type="text",
+          class="form-control",
+          id="floatingURL",
+          placeholder="Foro URL"
+        )
+        label(for="floatingURL") Foto URL
+      div(class="d-flex justify-content-between")
+        button(class="btn btn-success", type="submit") Enviar
+        a(href="/productos"): button(class="btn btn-warning", type="button") Ver productos
