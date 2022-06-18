@@ -29,7 +29,7 @@ class Contenedor
             }
 
             return null;
-          }
+          };
 
           const productoACambiar = productoEncontrado(listaProd);
 
