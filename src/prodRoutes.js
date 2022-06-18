@@ -6,7 +6,7 @@ const productos = new Contenedor("./data/productos.txt");
 router.route("/")
   .get((req, res) => {
     productos.getAll()
-      .then(obj => res.render("productos", { obj, url: req.baseUrl }));
+      .then(obj => res.render("productos", { obj }));
   })
   .post((req, res) => {
     const producto = req.body;

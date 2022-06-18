@@ -1,27 +1,25 @@
-<div class="container bg-secondary bg-opacity-25 p-5 w-25">
-  <h1 class="text-primary mb-5">Vista de productos</h1>
-  {{#if obj.length}}
-    <table class="table table-dark">
-      <thead>
-        <th>Nombre</th>
-        <th>Precio</th>
-        <th>Foto</th>
-      </thead>
-      <tbody>
-        {{#each obj}}
-          <tr>
-            <td>{{this.title}}</td>
-            <td>${{this.price}}</td>
-            <td><img src={{this.thumbnail}} width="32" /></td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  {{/if}}
-  {{#unless obj.length}}
-    <div class="alert alert-warning" role="alert">
-      <h4>No se encontraron productos</h4>
-    </div>
-  {{/unless}}
-  <a href="/"><button class="btn btn-danger">Ingresar productos</button></a>
-</div>
+{{#if obj.length}}
+  <table class="table table-dark">
+    <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Precio</th>
+      <th>Foto</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#each obj}}
+      <tr>
+        <td>{{this.title}}</td>
+        <td>${{this.price}}</td>
+        <td><img src={{this.thumbnail}} width="32"/></td>
+      </tr>
+    {{/each}}
+    </tbody>
+  </table>
+{{/if}}
+{{#unless obj.length}}
+  <div class="alert alert-warning" role="alert">
+    <h4>No se encontraron productos</h4>
+  </div>
+{{/unless}}
