@@ -1,4 +1,4 @@
-const Contenedor = require("./Contenedor");
+const Contenedor = require("../src/Contenedor");
 const router = require("express").Router();
 
 const productos = new Contenedor("./data/productos.txt");

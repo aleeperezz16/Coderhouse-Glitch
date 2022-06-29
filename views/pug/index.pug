@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  div.container.bg-secondary.bg-opacity-25.p-5.w-50.mb-4
+    h1.text-primary.mb-5 Ingresar producto
+    form(onsubmit="return agregarProducto()")
+      div.form-floating.mb-3
+        input.form-control#floatingNombre(name="title", type="text", placeholder="Nombre", required=true)
+        label(for="floatingNombre") Nombre
+      div.form-floating.mb-3
+        input.form-control#floatingPrecio(name="price", type="text", placeholder="Precio", required=true)
+        label(for="floatingPrecio") Precio
+      div.form-floating.mb-3
+        input.form-control#floatingURL(name="thumbnail", type="text", placeholder="Foto URL", required=true)
+        label(for="floatingURL") Foto URL
+      button.btn.btn-success(type="submit") Enviar
+    hr
+    include tablaProductos
+  include chat
+  script(src="javascript/index.js")
