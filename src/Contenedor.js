@@ -5,73 +5,68 @@ class Contenedor {
     this.archivo = archivo;
   }
 
-  async save(producto) {
+  async save(elemento) {
     try {
-      // Leo lo que tengo
       const data = await fs.promises.readFile(this.archivo, "utf-8");
       if (data.length) {
-        // Si ya tengo datos, obtengo el array de productos
-        const listaProd = JSON.parse(data);
+        const lista = JSON.parse(data);
 
-        // Si "producto" tiene una propiedad "id" es porque lo quiero modificar
-        if (producto.id !== undefined) {
-          const productoEncontrado = (listaProductos) => {
-            for (const prod of listaProductos) {
-              if (prod.id === producto.id)
-                return prod;
+        if (elemento.id) {
+          const elemEncontrado = (lista) => {
+            for (const elem of lista) {
+              if (elem.id === elemento.id)
+                return elem;
             }
 
             return null;
           };
 
-          const productoACambiar = productoEncontrado(listaProd);
+          const elemACambiar = elemEncontrado(lista);
 
-          if (productoACambiar !== null)
-            listaProd[listaProd.indexOf(productoACambiar)] = producto;
+          if (elemACambiar)
+            lista[lista.indexOf(elemACambiar)] = elemento;
           else
-            throw "Producto no encontrado";
+            throw "no encontrado";
         } else {
-          // Es uno nuevo, lo agrego
-          // Leo el indice del ultimo producto para actualizarlo
-          producto.id = listaProd[listaProd.length - 1].id + 1;
-          listaProd.push(producto);
+          elemento.id = lista[lista.length - 1].id + 1;
+          lista.push(elemento);
         }
 
-        fs.promises.writeFile(this.archivo, JSON.stringify(listaProd));
+        fs.promises.writeFile(this.archivo, JSON.stringify(lista));
       } else {
-        // Si no tengo ninguno, creo el arreglo con un solo producto
-        producto.id = 1;
-        fs.promises.writeFile(this.archivo, JSON.stringify([producto]));
+        elemento.id = 1;
+        fs.promises.writeFile(this.archivo, JSON.stringify([elemento]));
       }
     } catch (err) {
       throw new Error(err);
     }
 
-    return producto.id;
+    return elemento.id;
   }
 
   async getById(id) {
-    let producto = null;
+    let elemento = null;
 
     try {
       const data = await fs.promises.readFile(this.archivo, "utf-8");
       if (data.length) {
-        const listProd = JSON.parse(data);
-        for (const elem of listProd) {
+        const lista = JSON.parse(data);
+        for (const elem of lista) {
           if (elem.id === id) {
-            producto = elem;
+            elemento = elem;
             break;
           }
         }
 
-        if (producto === null)
-          throw "Producto no encontrado";
-      }
+        if (!elemento)
+          throw "no encontrado";
+      } else
+        throw "no encontrado";
     } catch (err) {
       throw new Error(err);
     }
 
-    return producto;
+    return elemento;
   }
 
   async getAll() {
@@ -90,25 +85,26 @@ class Contenedor {
     try {
       const data = await fs.promises.readFile(this.archivo, "utf-8");
       if (data.length) {
-        const productos = JSON.parse(data);
-        let productoEliminado = false;
+        const lista = JSON.parse(data);
+        let elemEliminado = false;
 
-        for (let i = 0; i < productos.length && !productoEliminado; i++) {
-          if (productos[i].id === id) {
-            productos.splice(i, 1);
-            productoEliminado = true;
+        for (let i = 0; i < lista.length && !elemEliminado; i++) {
+          if (lista[i].id === id) {
+            lista.splice(i, 1);
+            elemEliminado = true;
           }
         }
 
-        // Terminé el ciclo y no borré nada
-        if (!productoEliminado)
-          throw "Producto no encontrado";
+        if (!elemEliminado)
+          throw "no encontrado";
 
         await fs.promises.writeFile(
           this.archivo,
-          productos.length ? JSON.stringify(productos) : ""
+          lista.length ? JSON.stringify(lista) : ""
         );
       }
+      else
+        throw "no encontrado";
     } catch (err) {
       throw new Error(err);
     }
