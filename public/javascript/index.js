@@ -26,9 +26,9 @@ socket.on("cargar-mensajes", data => {
 
 function agregarProducto() {
   const producto = {
-    title: document.getElementsByName("title").item(0).value,
-    price: document.getElementsByName("price").item(0).value,
-    thumbnail: document.getElementsByName("thumbnail").item(0).value
+    title: document.querySelector("[name=title]").value,
+    price: parseFloat(document.querySelector("[name=price]").value),
+    thumbnail: document.querySelector("[name=thumbnail]").value
   }
 
   socket.emit("agregar-producto", producto);

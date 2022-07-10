@@ -1,6 +1,105 @@
-const fs = require("fs");
+const knex = require("knex").knex(({
+  client: "mysql",
+  connection: {
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "coderhouse"
+  }
+}));
 
-class Contenedor {
+function Contenedor() {
+  this.crearTabla = async () => {
+    try {
+      if (!await knex.schema.hasTable("productos")) {
+        await knex.schema.createTable("productos", table => {
+          table.increments("id").primary();
+          table.string("title", 20);
+          table.double("price");
+          table.string("thumbnail");
+        })
+          .then(() => console.log("Tabla de productos creada"))
+          .catch(err => console.error(err));
+      }
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  this.save = async (producto) => {
+    try {
+      if (producto.id) {
+        return await knex("productos")
+          .where({ id: producto.id })
+          .update({
+            title: producto.title,
+            price: producto.price,
+            thumbnail: producto.thumbnail
+          })
+          .then(() => producto.id)
+          .catch(err => console.error(err));
+      } else {
+        return await knex("productos")
+          .insert(producto)
+          .then(res => res[0])
+          .catch(err => console.error(err));
+      }
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  this.getById = async (id) => {
+    try {
+      return await knex("productos")
+        .select("title", "price", "thumbnail")
+        .where({ id })
+        .then(res => res)
+        .catch(err => console.error(err));
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  this.getAll = async () => {
+    try {
+      return await knex("productos")
+        .select("title", "price", "thumbnail")
+        .then(res => res)
+        .catch(err => console.error(err));
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  this.deleteById = async (id) => {
+    try {
+      await knex("productos")
+        .where({ id })
+        .del()
+        .then(() => "Producto eliminado")
+        .catch(err => console.error(err));
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  this.deleteAll = async () => {
+    try {
+      await knex("productos")
+        .del()
+        .then(() => "Productos eliminados")
+        .catch(err => console.error(err));
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+}
+
+
+// const fs = require("fs");
+
+/* class Contenedor {
   constructor(archivo) {
     this.archivo = archivo;
   }
@@ -121,6 +220,6 @@ class Contenedor {
       throw new Error(err);
     }
   }
-}
+} */
 
 module.exports = Contenedor;

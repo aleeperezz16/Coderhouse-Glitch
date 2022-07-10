@@ -3,13 +3,12 @@ const { Server: HttpServer } = require("http");
 const { Server: IOServer } = require("socket.io");
 const Chat = require("./src/Chat");
 const Container = require("./src/Contenedor");
-const {renderFile} = require("pug");
 
 const app = express();
 const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
-const chat = new Chat("./data/mensajes.txt");
-const contenedor = new Container("./data/productos.txt");
+const chat = new Chat();
+const contenedor = new Container();
 
 app.set("views", `${__dirname}/views/pug`);
 app.set("view engine", "pug");
@@ -26,6 +25,7 @@ io.on("connection", socket => {
   // Productos
   contenedor.getAll()
     .then(res => socket.emit("cargar-tabla", res));
+
   socket.on("agregar-producto", data => {
     contenedor.save(data)
       .then(() => {
@@ -50,4 +50,7 @@ const PORT = process.env.PORT || 8080;
 
 httpServer.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
+
+  contenedor.crearTabla();
+  chat.crearTabla();
 });
