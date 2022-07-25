@@ -1,7 +1,8 @@
-const Contenedor = require("../src/Contenedor");
-const router = require("express").Router();
+import { productosApi } from "../daos/index.js";
+import { Router } from "express";
+const router = Router();
 
-const contenedor = new Contenedor("./data/productos.txt");
+const productos = productosApi;
 const admin = true;
 
 const esAdmin = (req, res, next) => {
@@ -18,11 +19,11 @@ const esProductoValido = (data) => {
 router.route("/:id?")
   .get((req, res) => {
     if (!req.params.id)
-      contenedor.getAll()
+      productos.getAll()
         .then(prods => prods ? res.status(200).json(prods) : res.status(404).json({ error: "No hay productos" }))
         .catch(err => res.status(400).json({ error: "Producto " + err.message }));
     else
-      contenedor.getById(Number(req.params.id))
+      productos.getById(Number(req.params.id))
         .then(prod => res.status(200).json(prod))
         .catch(err => res.status(400).json({ error: "Producto " + err.message }));
   })
@@ -37,13 +38,13 @@ router.route("/:id")
       nuevoProducto.id = Number(req.params.id);
       nuevoProducto.timestamp = new Date().getTime();
 
-      contenedor.save(nuevoProducto)
+      productos.save(nuevoProducto)
         .then(() => res.sendStatus(201))
         .catch(err => res.status(400).json({ error: "Producto " + err.message }));
     }
   })
   .delete(esAdmin, (req, res) => {
-    contenedor.deleteById(Number(req.params.id))
+    productos.deleteById(Number(req.params.id))
       .then(() => res.sendStatus(200))
       .catch(err => res.status(400).json({ error: "Producto " + err.message }));
   })
@@ -55,10 +56,10 @@ router.route("/")
       res.sendStatus(400);
     else {
       producto.timestamp = new Date().getTime();
-      contenedor.save(producto)
+      productos.save(producto)
         .then(() => res.sendStatus(201))
         .catch(err => res.status(400).json({ error: "Producto " + err.message }));
     }
   });
 
-module.exports = router;
+export { router };

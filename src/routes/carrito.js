@@ -1,8 +1,9 @@
-const router = require("express").Router();
-const Container = require("../src/Contenedor");
+import { Router } from "express";
+import { carritoApi, productosApi } from "../daos/index.js";
+const router = Router();
 
-const contenedorC = new Container("./data/carritos.txt");
-const contenedorP = new Container("./data/productos.txt");
+const carrito = carritoApi;
+const productos = productosApi;
 
 router.route("/")
   .post((req, res) => {
@@ -15,7 +16,7 @@ router.route("/")
     if (esCarritoValido(carrito)) {
       carrito.timestamp = new Date().getTime();
 
-      contenedorC.save(carrito)
+      carrito.save(carrito)
         .then(id => res.status(201).send(`Carrito de compras creado con id: ${id}`))
         .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
     } else
@@ -24,30 +25,30 @@ router.route("/")
 
 router.route("/:id")
   .delete((req, res) => {
-    contenedorC.deleteById(Number(req.params.id))
+    carrito.deleteById(Number(req.params.id))
       .then(() => res.sendStatus(200))
       .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
   })
 
 router.route("/:id/productos")
   .get((req, res) => {
-    contenedorC.getById(Number(req.params.id))
+    carrito.getById(Number(req.params.id))
       .then(carrito => carrito.productos ? res.status(200).json(carrito.productos) : res.status(404).json({ error: "No hay productos" }))
       .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
   })
   .post((req, res) => {
-    contenedorC.getById(Number(req.params.id))
+    carrito.getById(Number(req.params.id))
       .then(carrito => {
         const { id } = Number(req.body);
 
         if (isNaN(id))
           res.sendStatus(400);
         else {
-          contenedorP.getById(id)
+          productos.getById(id)
             .then(prod => {
               carrito.productos.push(prod);
 
-              contenedorC.save(carrito)
+              carrito.save(carrito)
                 .then(() => res.sendStatus(201))
                 .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
             })
@@ -59,7 +60,7 @@ router.route("/:id/productos")
 
 router.route("/:id/productos/:id_prod")
   .delete((req, res) => {
-    contenedorC.getById(Number(req.params.id))
+    carrito.getById(Number(req.params.id))
       .then(carrito => {
         const idProd = Number(req.params.id_prod);
         
@@ -76,4 +77,4 @@ router.route("/:id/productos/:id_prod")
       .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
   })
 
-module.exports = router;
+export { router };

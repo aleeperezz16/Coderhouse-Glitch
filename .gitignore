@@ -1,2 +1,3 @@
 node_modules
-.idea
+.env
+credencial_firebase_ch.json
