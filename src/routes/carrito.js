@@ -6,75 +6,67 @@ const carrito = carritoApi;
 const productos = productosApi;
 
 router.route("/")
-  .post((req, res) => {
-    const esCarritoValido = (data) => {
-      return data.productos && data.productos.length;
-    }
+  .post(async (req, res) => {
+    const { productos } = req.body;
 
-    const carrito = req.body;
+    if (!productos || !productos.length)
+      return res.status(400).json({ error: "Campos necesarios faltantes" });
 
-    if (esCarritoValido(carrito)) {
-      carrito.timestamp = new Date().getTime();
-
-      carrito.save(carrito)
-        .then(id => res.status(201).send(`Carrito de compras creado con id: ${id}`))
-        .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
-    } else
-      res.sendStatus(400);
+    res.status(201).json(await carrito.save({ productos }));
   });
 
 router.route("/:id")
-  .delete((req, res) => {
-    carrito.deleteById(Number(req.params.id))
-      .then(() => res.sendStatus(200))
-      .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
-  })
+  .delete(async (req, res) => {
+    const respuesta = await carrito.deleteById(req.params.id);
+    respuesta.error ? res.status(400).json(respuesta) : res.status(200).json(respuesta);
+  });
 
 router.route("/:id/productos")
-  .get((req, res) => {
-    carrito.getById(Number(req.params.id))
-      .then(carrito => carrito.productos ? res.status(200).json(carrito.productos) : res.status(404).json({ error: "No hay productos" }))
-      .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
-  })
-  .post((req, res) => {
-    carrito.getById(Number(req.params.id))
-      .then(carrito => {
-        const { id } = Number(req.body);
+  .get(async (req, res) => {
+    const respuesta = await carrito.getById(req.params.id);
 
-        if (isNaN(id))
-          res.sendStatus(400);
-        else {
-          productos.getById(id)
-            .then(prod => {
-              carrito.productos.push(prod);
-
-              carrito.save(carrito)
-                .then(() => res.sendStatus(201))
-                .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
-            })
-            .catch(err => res.status(400).json({ error: "Producto " + err.message }));
-        }
-      })
-      .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
+    // TODO: Mejorar la forma en mostrar los productos buscando cada uno en el container de productos.
+    respuesta.error ? res.status(400).json(respuesta) : respuesta.productos ? res.status(200).json(respuesta.productos) : res.status(404).json({ error: "No hay productos" });
   })
+  .post(async (req, res) => {
+    const respuesta = await carrito.getById(req.params.id);
+    if (!respuesta.error) {
+      const { id } = req.body;
+
+      if (!id)
+        return res.status(400).json({ error: "Campos necesarios faltantes" });
+      // TODO: Mejorar la forma de agregar productos chequeando si el mismo ya existe.
+      const respuesta2 = await productos.getById(id);
+
+      if (respuesta2.error) {
+        res.status(400).json(respuesta2);
+      } else {
+        respuesta.productos = [...respuesta.productos, id];
+        res.status(201).json(await carrito.update(req.params.id, respuesta));
+      }
+    } else {
+      res.status(400).json(respuesta);
+    }
+  });
 
 router.route("/:id/productos/:id_prod")
-  .delete((req, res) => {
-    carrito.getById(Number(req.params.id))
-      .then(carrito => {
-        const idProd = Number(req.params.id_prod);
-        
-        carrito.productos.forEach((elem, index) => {
-          if (index === idProd) {
-            carrito.productos.splice(index, 1);
-            return true;
-          }
-        })
+  .delete(async (req, res) => {
+    const respuesta = await carrito.getById(req.params.id);
 
-        return false;
-      })
-      .then(result => result ? res.sendStatus(200) : res.status(404).json({ error: "Producto no encontrado" }))
-      .catch(err => res.status(400).json({ error: "Carrito " + err.message }));
-  })
+    if (respuesta.error) {
+      res.status(400).json(respuesta);
+    } else {
+      // Para que funciones en todas las db, numero y ObjectId, uso == en vez de ===.
+      const index = respuesta.productos.findIndex(item => item == req.params.id_prod);
+
+      if (index === -1)
+        return res.status(404).json({ error: "Elemento no encontrado" });
+
+      respuesta.productos.splice(index, 1);
+    
+      const respuesta2 = await carrito.update(req.params.id, respuesta);
+      respuesta2.error ? res.status(404).json(respuesta2) : res.status(200).json(respuesta2);
+    }
+  });
 
 export { router };

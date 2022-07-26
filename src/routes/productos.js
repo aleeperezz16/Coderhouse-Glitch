@@ -6,60 +6,36 @@ const productos = productosApi;
 const admin = true;
 
 const esAdmin = (req, res, next) => {
-  if (!admin)
-    res.status(400).json({ error : -1, descripcion: `Ruta '${req.originalUrl}' método '${req.method}' no autorizado` });
-  else
-    next();
-}
-
-const esProductoValido = (data) => {
-  return data.nombre && data.descripcion && data.codigo && data.foto && data.precio && data.stock;
+  !admin ? res.status(400).json({ error: -1, descripcion: `Ruta '${req.originalUrl}' método '${req.method}' no autorizado` }) : next();
 }
 
 router.route("/:id?")
-  .get((req, res) => {
-    if (!req.params.id)
-      productos.getAll()
-        .then(prods => prods ? res.status(200).json(prods) : res.status(404).json({ error: "No hay productos" }))
-        .catch(err => res.status(400).json({ error: "Producto " + err.message }));
-    else
-      productos.getById(Number(req.params.id))
-        .then(prod => res.status(200).json(prod))
-        .catch(err => res.status(400).json({ error: "Producto " + err.message }));
-  })
+  .get(async (req, res) => {
+    const respuesta = req.params.id ? await productos.getById(req.params.id) : await productos.getAll();
+    
+    respuesta.error ? res.status(400).json(respuesta) : res.status(200).json(respuesta);
+  });
 
 router.route("/:id")
-  .put(esAdmin, (req, res) => {
-    const nuevoProducto = req.body;
-
-    if (!esProductoValido(nuevoProducto))
-      res.sendStatus(400);
-    else {
-      nuevoProducto.id = Number(req.params.id);
-      nuevoProducto.timestamp = new Date().getTime();
-
-      productos.save(nuevoProducto)
-        .then(() => res.sendStatus(201))
-        .catch(err => res.status(400).json({ error: "Producto " + err.message }));
-    }
+  .put(esAdmin, async (req, res) => {
+    const { nombre, descripcion, codigo, foto, precio, stock } = req.body;
+    const respuesta = await productos.update(req.params.id, { nombre, descripcion, codigo, foto, precio, stock });
+    
+    respuesta.error ? res.status(400).json(respuesta) : res.status(201).json(respuesta);
   })
-  .delete(esAdmin, (req, res) => {
-    productos.deleteById(Number(req.params.id))
-      .then(() => res.sendStatus(200))
-      .catch(err => res.status(400).json({ error: "Producto " + err.message }));
-  })
+  .delete(esAdmin, async (req, res) => {
+    const respuesta = await productos.deleteById(req.params.id);
+    
+    respuesta.error ? res.status(400).json(respuesta) : res.status(200).json();
+  });
 
 router.route("/")
-  .post(esAdmin, (req, res) => {
-    const producto = req.body;
-    if (!esProductoValido(producto))
-      res.sendStatus(400);
-    else {
-      producto.timestamp = new Date().getTime();
-      productos.save(producto)
-        .then(() => res.sendStatus(201))
-        .catch(err => res.status(400).json({ error: "Producto " + err.message }));
-    }
+  .post(esAdmin, async (req, res) => {
+    const { nombre, descripcion, codigo, foto, precio, stock } = req.body;
+    if (!nombre || !descripcion || !codigo || !foto || !precio || !stock)
+      return res.status(400).json({ error: "Campos necesarios faltantes" });
+
+    res.status(201).json(await productos.save({ nombre, descripcion, codigo, foto, precio, stock }));
   });
 
 export { router };

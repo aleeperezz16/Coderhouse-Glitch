@@ -4,14 +4,18 @@ admin.initializeApp({
   credential: admin.credential.applicationDefault()
 });
 
+const db = admin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
+
 class ContenedorFirebase {
   constructor(coleccion) {
-    this.coleccion = admin.firestore().collection(coleccion);
+    this.coleccion = db.collection(coleccion);
   }
 
   async save(elemento) {
     try {
-      return await this.coleccion.doc().create(elemento);
+      await this.coleccion.doc().set(elemento);
+      return elemento;
     } catch (error) {
       throw new Error(error);
     }
@@ -27,7 +31,8 @@ class ContenedorFirebase {
 
   async getById(id) {
     try {
-      return await this.coleccion.doc(id).get();
+      const doc = await this.coleccion.doc(id).get();
+      return !doc.exists ? { error: "Elemento no encontrado" } : doc.data();
     } catch (error) {
       throw new Error(error);
     }
@@ -35,7 +40,8 @@ class ContenedorFirebase {
 
   async getAll() {
     try {
-      return await this.coleccion.doc().get();
+      const snapshot = await this.coleccion.get();
+      return snapshot.docs.map(item => item.data());
     } catch (error) {
       throw new Error(error);
     }
@@ -49,13 +55,14 @@ class ContenedorFirebase {
     }
   }
 
-  async deleteAll() {
-    try {
-      return await this.coleccion.doc().delete();
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
+  // Este es medio rebuscado. Como no se usa lo comento
+  // async deleteAll() {
+  //   try {
+  //     return await this.coleccion.doc().delete();
+  //   } catch (error) {
+  //     throw new Error(error);
+  //   }
+  // }
 }
 
 export { ContenedorFirebase };

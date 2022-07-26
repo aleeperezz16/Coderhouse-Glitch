@@ -11,12 +11,14 @@ class ContenedorArchivo {
       const data = await this.getAll();
       const ultimo = data[data.length - 1];
       
+      elemento.timestamp = Date.now();
       elemento.id = ultimo ? ultimo.id + 1 : 1;
-      
+
       data.push(elemento);
+
       await fs.writeFile(this.nombreArchivo, JSON.stringify(data));
-      
-      return elemento.id;
+
+      return elemento;
     } catch (error) {
       throw new Error(error);
     }
@@ -28,13 +30,15 @@ class ContenedorArchivo {
       const index = data.findIndex(item => item.id === parseInt(id));
 
       if (index === -1)
-        throw "no encontrado";
+        return { error: "Elemento no encontrado" };
+
+      Object.keys(elemento).forEach(key => !elemento[key] && delete elemento[key]);      
 
       const actualizado = { ...data[index], ...elemento };
       data[index] = actualizado;
 
       await fs.writeFile(this.nombreArchivo, JSON.stringify(data));
-      return id;
+      return actualizado;
     } catch (error) {
       throw new Error(error);
     }
@@ -46,7 +50,7 @@ class ContenedorArchivo {
       const elemento = data.find(item => item.id === parseInt(id));
 
       if (!elemento)
-        throw "no encontrado";
+        return { error: "Elemento no encontrado" };
 
       return elemento; 
     } catch (error) {
@@ -57,7 +61,7 @@ class ContenedorArchivo {
   async getAll() {
     try {
       const data = await fs.readFile(this.nombreArchivo, "utf-8");
-      return data.length ? JSON.parse(data) : null;
+      return data.length ? JSON.parse(data) : [];
     } catch (error) {
       throw new Error(error);
     }
@@ -69,11 +73,14 @@ class ContenedorArchivo {
       const index = data.findIndex(item => item.id === parseInt(id));
 
       if (index === -1)
-        throw "no encontrado";
+        return { error: "Elemento no encontrado" };
+
+      const elementoAEliminar = data[index];
 
       data.splice(index, 1);
       await fs.writeFile(this.nombreArchivo, data.length ? JSON.stringify(data) : "");
 
+      return elementoAEliminar;
     } catch (error) {
       throw new Error(error);
     }
@@ -82,6 +89,7 @@ class ContenedorArchivo {
   async deleteAll() {
     try {
       await fs.writeFile(this.nombreArchivo, "");
+      return { mensaje: "Todos los elementos fueron eliminados" }
     } catch (error) {
       throw new Error(error);
     }

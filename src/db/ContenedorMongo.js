@@ -5,7 +5,7 @@ mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, d
 
 class ContenedorMongo {
   constructor(coleccion, schema) {
-    this.model = mongoose.model(coleccion, schema);
+    this.model = mongoose.model(coleccion, new mongoose.Schema(schema));
   }
 
   async save(elemento) {
@@ -18,7 +18,8 @@ class ContenedorMongo {
 
   async update(id, elemento) {
     try {
-      return await this.model.findByIdAndUpdate(id, { $set: elemento });
+      const respuesta = (await this.model.findByIdAndUpdate(id, { $set: elemento }));
+      return respuesta ? respuesta : { error: "Elemento no encontrado" };
     } catch (error) {
       throw new Error(error);
     }
@@ -26,7 +27,8 @@ class ContenedorMongo {
 
   async getById(id) {
     try {
-      return await this.model.findById(id);
+      const respuesta = await this.model.findById(id);
+      return respuesta ? respuesta : { error: "Elemento no encontrado" };
     } catch (error) {
       throw new Error(error);
     }
@@ -42,7 +44,8 @@ class ContenedorMongo {
 
   async deleteById(id) {
     try {
-      return await this.model.findByIdAndDelete(id);
+      const respuesta = await this.model.findByIdAndDelete(id);
+      return respuesta ? respuesta : { error: "Elemento no encontrado" };
     } catch (error) {
       throw new Error(error);
     }
