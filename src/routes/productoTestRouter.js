@@ -9,7 +9,7 @@ const router = Router();
 router.use(cookieParser());
 router.use(session({
   store: MongoStore.create({ 
-    mongoUrl: MONGO_DB_URI,
+    mongoUrl: process.env.MONGO_DB_URI,
     mongoOptions: {
       useNewUrlParser: true,
       useUnifiedTopology: true

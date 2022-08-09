@@ -41,9 +41,11 @@ io.on("connection", async socket => {
 
   allMessages.mensajes = await mensajes.getAll();
   socket.emit("cargar-mensajes", normalize(allMessages, postsSchema));
+
   socket.on("enviar-mensaje", async data => {
     await mensajes.save(data);
     allMessages.mensajes = await mensajes.getAll();
+    
     io.sockets.emit("cargar-mensajes", normalize(allMessages, postsSchema));
   })
 });
