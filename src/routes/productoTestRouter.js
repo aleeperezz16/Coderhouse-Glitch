@@ -3,13 +3,14 @@ import { faker } from "@faker-js/faker/locale/es";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import { mongo } from "../config/index.js";
 
 const router = Router();
 
 router.use(cookieParser());
 router.use(session({
   store: MongoStore.create({ 
-    mongoUrl: process.env.MONGO_DB_URI,
+    mongoUrl: mongo.uri,
     mongoOptions: {
       useNewUrlParser: true,
       useUnifiedTopology: true
