@@ -1,54 +1,129 @@
 import { Router } from "express";
 import { faker } from "@faker-js/faker/locale/es";
-import cookieParser from "cookie-parser";
-import session from "express-session";
-import MongoStore from "connect-mongo";
 import { mongo } from "../config/index.js";
+import { Strategy } from "passport-local";
+import session from "express-session";
+import passport from "passport";
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
+mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "coderhouse" });
+
+const LocalStrategy = Strategy;
 const router = Router();
-
-router.use(cookieParser());
-router.use(session({
-  store: MongoStore.create({ 
-    mongoUrl: mongo.uri,
-    mongoOptions: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    },
-    ttl: 60
-  }),
-  secret: "esto es un secreto",
-  resave: true,
-  saveUninitialized: false
+const usuarios = mongoose.model("usuarios", new mongoose.Schema({
+  email: { type: String, required: true },
+  password: { type: String, required: true }
 }));
 
-const checkLogin = (req, res, next) => {
-  if (req.session?.user)
+router.use(session({
+  secret: "esto es un secreto",
+  resave: true,
+  saveUninitialized: false,
+  cookie: { maxAge: 60000 }
+}));
+
+router.use(passport.initialize());
+router.use(passport.session());
+
+passport.use(
+  new LocalStrategy({ usernameField: "email" }, (username, password, done) => {
+    usuarios.findOne({ email: username }, (err, user) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+
+      if (!user)
+        return done(null, false);
+
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+
+        if (isMatch)
+          return done(null, user);
+
+        return done(null, false);
+      });
+    });
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  const user = await usuarios.findById(id);
+  done(null, user);
+});
+
+const auth = (req, res, next) => {
+  if (req.isAuthenticated())
     return next();
   
-  return res.render("login");
+  return res.redirect(req.baseUrl + "/login");
 };
 
-router.get("/", checkLogin, (req, res) => {
-  const productos = [];
-  for (let i = 0; i < 5; i++) {
-    const nombre = faker.commerce.product();
-    productos.push({
-      nombre,
-      precio: faker.commerce.price(),
-      imagen: faker.image.imageUrl(undefined, undefined, nombre),
-    });
+router.get("/", auth, (req, res) => {
+  if (req.user) {
+    const productos = [];
+    for (let i = 0; i < 5; i++) {
+      const nombre = faker.commerce.product();
+      productos.push({
+        nombre,
+        precio: faker.commerce.price(),
+        imagen: faker.image.imageUrl(undefined, undefined, nombre),
+      });
+    }
+
+    res.render("productos", { productos, user: req.user.email });
+  } else {
+    res.redirect(req.baseUrl + "/login");
   }
-
-  res.render("productos", { productos, user: req.session?.user });
 });
 
-router.post("/", (req, res) => {
-  const { user } = req.body;
-  req.session.user = user;
+router.route("/login")
+  .get((req, res) => {
+    res.render("login");
+  })
+  .post(passport.authenticate("local", { failureRedirect: "login-error" }), (req, res) => {
+    res.redirect(req.baseUrl);
+  });
 
-  res.redirect(req.baseUrl);
-});
+router.get("/login-error", (req, res) => {
+  res.render("login-error");
+})
+
+router.route("/register")
+  .get((req, res) => {
+    res.render("register");
+  })
+  .post((req, res) => {
+    const { email, password } = req.body;
+    usuarios.findOne({ email }, async (err, user) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+
+      if (user)
+        res.render("register-error");
+      else {
+        const hashed = await bcrypt.hash(password, 10);
+        const newUser = new usuarios({
+          email,
+          password: hashed
+        });
+
+        await newUser.save();
+        res.redirect(req.baseUrl + "/login");
+      }
+    });
+  });
 
 router.get("/logout", (req, res) => {
   const user = req.session?.user;
