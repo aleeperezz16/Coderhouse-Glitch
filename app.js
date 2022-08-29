@@ -4,9 +4,10 @@ import http from "http";
 import path from "path";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
-import { productoTestRouter } from "./src/routes/index.js";
+import { productoTestRouter, infoRouter, randomRouter } from "./src/routes/index.js";
 import { mensajesApi } from "./src/daos/index.js";
 import { normalize, schema } from "normalizr";
+import minimist from "minimist";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,6 +15,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const mensajes = mensajesApi;
+const args = minimist(process.argv, {
+  alias: {
+    p: "PORT"
+  },
+  default: {
+    PORT: 8080
+  }
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,6 +32,8 @@ app.set("view engine", "ejs");
 
 app.use("/api/productos-test", productoTestRouter);
 app.use("/api/mensajes", express.static(path.join(__dirname, "public")));
+app.use("/api/randoms", randomRouter);
+app.use("/info", infoRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: -2, descripcion: `Ruta '${req.url}' método '${req.method}' no implementado` });
@@ -50,7 +61,7 @@ io.on("connection", async (socket) => {
   })
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = args["PORT"];
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);

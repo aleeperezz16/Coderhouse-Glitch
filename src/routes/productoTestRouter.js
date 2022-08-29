@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { faker } from "@faker-js/faker/locale/es";
-import { mongo } from "../config/index.js";
+import { mongo, secret } from "../config/index.js";
 import { Strategy } from "passport-local";
 import session from "express-session";
 import passport from "passport";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "coderhouse" });
+mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: mongo.dbName });
 
 const LocalStrategy = Strategy;
 const router = Router();
@@ -17,7 +17,7 @@ const usuarios = mongoose.model("usuarios", new mongoose.Schema({
 }));
 
 router.use(session({
-  secret: "esto es un secreto",
+  secret,
   resave: true,
   saveUninitialized: false,
   cookie: { maxAge: 60000 }
@@ -29,28 +29,18 @@ router.use(passport.session());
 passport.use(
   new LocalStrategy({ usernameField: "email" }, (username, password, done) => {
     usuarios.findOne({ email: username }, (err, user) => {
-      if (err) {
+      if (err)
         console.log(err);
-        return;
-      }
 
-      if (!user)
-        return done(null, false);
-
-      bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err) {
+      bcrypt.compare(password, user?.password, (err, isMatch) => {
+        if (err)
           console.log(err);
-          return;
-        }
 
-        if (isMatch)
-          return done(null, user);
-
-        return done(null, false);
+        return done(null, isMatch ? user : false);
       });
     });
-  })
-);
+  }
+  ));
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -62,10 +52,7 @@ passport.deserializeUser(async (id, done) => {
 });
 
 const auth = (req, res, next) => {
-  if (req.isAuthenticated())
-    return next();
-  
-  return res.redirect(req.baseUrl + "/login");
+  return res.isAuthenticated() ? next() : res.redirect(req.baseUrl + "/login");
 };
 
 router.get("/", auth, (req, res) => {
@@ -81,9 +68,8 @@ router.get("/", auth, (req, res) => {
     }
 
     res.render("productos", { productos, user: req.user.email });
-  } else {
+  } else
     res.redirect(req.baseUrl + "/login");
-  }
 });
 
 router.route("/login")
@@ -128,10 +114,7 @@ router.route("/register")
 router.get("/logout", (req, res) => {
   const user = req.session?.user;
   req.session.destroy(err => {
-    if (err)
-      return res.json({ status: "Logout ERROR", body: err });
-    
-    return res.render("logout", { user });
+    return err ? res.json({ status: "Logout ERROR", body: err }) : res.render("logout", { user });
   });
 });
 
