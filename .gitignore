@@ -1,3 +1,4 @@
 node_modules
 .env
 credencial_firebase_ch.json
+nginx-1.22.0

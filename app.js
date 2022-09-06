@@ -8,6 +8,8 @@ import { productoTestRouter, infoRouter, randomRouter } from "./src/routes/index
 import { mensajesApi } from "./src/daos/index.js";
 import { normalize, schema } from "normalizr";
 import minimist from "minimist";
+import cluster from "cluster";
+import { cpus } from "os";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -63,6 +65,18 @@ io.on("connection", async (socket) => {
 
 const PORT = args["PORT"];
 
-server.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
+if (cluster.isPrimary) {
+  const numCPUs = cpus().length;
+
+  for (let i = 0; i < numCPUs; i++)
+    cluster.fork();
+
+  cluster.on("exit", (worker) => {
+    console.log(`Worker finalizó ${new Date().toLocaleString()}`);
+  });
+} else {
+  server.listen(PORT, () => {
+    console.log(`Servidor corriendo en puerto ${PORT} - PID ${process.pid}`);
+  });
+}
+

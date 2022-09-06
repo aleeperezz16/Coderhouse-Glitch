@@ -1,16 +1,13 @@
 import { Router } from "express";
-import { fork } from "child_process";
+import { cpus } from "os";
 
 const router = Router();
 
 router.get("/", (req, res) => {
-  const { cant = 1e8 } = req.query;
-  const child = fork("./src/random.js");
-
-  child.send(cant);
-  child.on("message", msg => {
-    res.json({ numeros: msg });
-  });
+  res.json({
+    num_random: Math.ceil(Math.random() * 1e9),
+    procesadores: cpus().length 
+  })
 });
 
 export { router };
