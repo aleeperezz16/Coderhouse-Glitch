@@ -10,6 +10,7 @@ import { normalize, schema } from "normalizr";
 import minimist from "minimist";
 import cluster from "cluster";
 import { cpus } from "os";
+import pino from "pino";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,8 +38,10 @@ app.use("/api/mensajes", express.static(path.join(__dirname, "public")));
 app.use("/api/randoms", randomRouter);
 app.use("/info", infoRouter);
 
-app.use((req, res) => {
+app.use((req, res, next) => {
   res.status(404).json({ error: -2, descripcion: `Ruta '${req.url}' método '${req.method}' no implementado` });
+  pino("./logs/warn.log").warn("Ruta %s metodo %s no implementado", req.url, req.method);
+  next();
 });
 
 const authorSchema = new schema.Entity("author", undefined, { idAttribute: "email" });

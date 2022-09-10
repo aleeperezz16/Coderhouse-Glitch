@@ -6,6 +6,7 @@ import session from "express-session";
 import passport from "passport";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import pino from "pino";
 
 mongoose.connect(mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: mongo.dbName });
 
@@ -15,6 +16,11 @@ const usuarios = mongoose.model("usuarios", new mongoose.Schema({
   email: { type: String, required: true },
   password: { type: String, required: true }
 }));
+
+router.use((req, res, next) => {
+  pino().info("Ruta %s metodo %s", req.baseUrl, req.method);
+  next();
+});
 
 router.use(session({
   secret,
