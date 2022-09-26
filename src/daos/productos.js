@@ -1,19 +1,15 @@
-import { ContenedorMongo } from "../../db/index.js";
+import mongoose from "mongoose";
 
-const ProductoSchema = {
+const productosSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now() },
   nombre: { type: String, required: true },
   descripcion: { type: String, required: true },
   codigo: { type: String, required: true },
   foto: { type: String, required: true },
   precio: { type: Number, required: true },
-  stock: { type: Number, required: true }
-};
+  stock: { type: Number, required: true },
+});
 
-class ProductoMongo extends ContenedorMongo {
-  constructor() {
-    super("productos", ProductoSchema);
-  }
-}
+const productos = mongoose.model("productos", productosSchema);
 
-export default ProductoMongo;
+export default productos;
