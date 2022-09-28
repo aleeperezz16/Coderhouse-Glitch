@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createTransport } from "nodemailer";
 import { admin } from "../config/index.js";
 import bcrypt from "bcrypt";
-import usuarios from "../daos/usuarios.js";
+import usuarios from "../daos/usuarios.daos.js";
 import twilio from "twilio";
 
 const router = Router();

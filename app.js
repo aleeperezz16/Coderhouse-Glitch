@@ -12,8 +12,10 @@ import {
   productoApiRouter,
   registerRouter,
   logoutRouter,
+  homeRouter,
+  pedidoRouter,
 } from "./src/routes/index.js";
-import usuarios from "./src/daos/usuarios.js";
+import usuarios from "./src/daos/usuarios.daos.js";
 
 mongoose.connect(mongo.uri, { dbName: mongo.db });
 
@@ -61,6 +63,8 @@ app.use("/api/carrito", carritoApiRouter);
 app.use("/register", registerRouter);
 app.use("/login", loginRouter);
 app.use("/logout", logoutRouter);
+app.use("/pedido", pedidoRouter);
+app.use("/", homeRouter);
 app.use((req, res) => {
   res.status(404).json({
     error: -2,

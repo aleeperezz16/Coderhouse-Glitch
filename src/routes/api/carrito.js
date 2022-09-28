@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { isValidObjectId } from "mongoose";
-import carrito from "../../daos/carrito.js";
-import productos from "../../daos/productos.js";
+import carrito from "../../daos/carrito.daos.js";
+import productos from "../../daos/productos.daos.js";
 
 const router = Router();
 

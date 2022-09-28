@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { isValidObjectId } from "mongoose";
 import { admin } from "../../config/index.js";
-import productos from "../../daos/productos.js";
+import productos from "../../daos/productos.daos.js";
 
 const router = Router();
 router.use("/:id?", (req, res, next) => {
