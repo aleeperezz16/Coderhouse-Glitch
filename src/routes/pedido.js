@@ -5,6 +5,7 @@ import twilio from "twilio";
 import { admin } from "../config/index.js";
 import carrito from "../daos/carrito.daos.js";
 import productos from "../daos/productos.daos.js";
+import log4js from "log4js";
 
 const router = Router();
 const client = twilio(admin.twilioAcc, admin.twilioToken);
@@ -18,20 +19,27 @@ const transporter = createTransport({
 });
 
 const auth = (req, res, next) => {
-  if (!req.isAuthenticated())
+  if (!req.isAuthenticated()) {
     res
       .status(400)
-      .json({ error: "Necesitás estar logueado para realizar un pedido" });
-  else next();
+      .json({ status: "Necesitás estar logueado para realizar un pedido" });
+    log4js
+      .getLogger("app.pedido")
+      .warn("Usuario intentando realizar pedido sin loguear");
+  } else next();
 };
 
 router.post("/", auth, async (req, res) => {
   const { idCarrito } = req.body;
 
-  if (!isValidObjectId(idCarrito))
+  if (!isValidObjectId(idCarrito)) {
+    log4js
+      .getLogger("app.pedido")
+      .error("Id (%s) de carrito inválido", idCarrito);
     return res
       .status(400)
-      .json({ error: `Id de carrito inválido (${idCarrito})` });
+      .json({ status: `Id (${idCarrito}) de carrito inválido` });
+  }
 
   const cart = await carrito.findById(idCarrito);
 
@@ -62,7 +70,11 @@ router.post("/", auth, async (req, res) => {
     });
 
     res.status(200).json({ status: "Pedido realizado" });
-  } else res.status(404).json({ error: "Carrito no encontrado" });
+    log4js.getLogger("app.pedido").info("Pedido realizado para %s", email);
+  } else {
+    res.status(404).json({ status: "Carrito no encontrado" });
+    log4js.getLogger("app.pedido").error("Carrito no encontrado");
+  }
 });
 
 export { router };

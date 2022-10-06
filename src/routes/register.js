@@ -4,6 +4,7 @@ import { admin } from "../config/index.js";
 import bcrypt from "bcrypt";
 import usuarios from "../daos/usuarios.daos.js";
 import twilio from "twilio";
+import log4js from "log4js";
 
 const router = Router();
 const client = twilio(admin.twilioAcc, admin.twilioToken);
@@ -20,8 +21,12 @@ router.post("/", async (req, res) => {
   const { email, password, nombre, direccion, edad, telefono, foto } = req.body;
   const result = await usuarios.findOne({ email });
 
-  if (result) res.status(400).json({ error: "Este usuario ya existe" });
-  else {
+  if (result) {
+    res.status(400).json({ status: "Este usuario ya existe" });
+    log4js
+      .getLogger("app.register")
+      .warn("No se ha podido registrar usuario porque ya existe");
+  } else {
     const passwordHashed = await bcrypt.hash(password, 10);
     await usuarios.insertMany({
       email,
@@ -33,6 +38,7 @@ router.post("/", async (req, res) => {
       foto,
     });
 
+    log4js.getLogger("app.register").info("Nuevo registro exitoso");
     res.status(200).send("Registro exitoso");
     const message = `Información del registro:
     Email: ${email}
