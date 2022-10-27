@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const productosSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now() },
@@ -10,6 +10,6 @@ const productosSchema = new mongoose.Schema({
   stock: { type: Number, required: true },
 });
 
-const productos = mongoose.model("productos", productosSchema);
+const ProductosModel = mongoose.model('productos', productosSchema);
 
-export default productos;
+export default ProductosModel;

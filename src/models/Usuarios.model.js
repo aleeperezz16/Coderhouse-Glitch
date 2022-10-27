@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const usuariosSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -10,6 +10,6 @@ const usuariosSchema = new mongoose.Schema({
   foto: { type: String, required: true },
 });
 
-const usuarios = mongoose.model("usuarios", usuariosSchema);
+const UsuariosModel = mongoose.model('usuarios', usuariosSchema);
 
-export default usuarios;
+export default UsuariosModel;
