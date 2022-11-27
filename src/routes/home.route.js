@@ -3,10 +3,12 @@ import bcrypt from 'bcrypt';
 import koaPassport from 'koa-passport';
 import jwt from 'jsonwebtoken';
 import controllers from '../controllers';
-import { authLogin } from '../middlewares';
-import { auth } from '../config';
+import transporter from '../utils/mailer.util';
+import calcularPrecio from '../utils/ordenes.util';
+import { authLogin, auth as authUser } from '../middlewares';
+import { auth, mail } from '../config';
 
-const { usuarios } = controllers;
+const { usuarios, carrito, ordenes } = controllers;
 const router = new Router();
 
 router.get('/', async (ctx) => {
@@ -87,6 +89,34 @@ router.post('/register', async (ctx) => {
   ctx.status = 200;
   ctx.body = {
     status: 'Fuiste registrado correctamente',
+  };
+});
+
+router.post('/orden', authUser, async (ctx) => {
+  const { email } = ctx.state.user.email;
+  const productos = carrito.obtener(email);
+  const nroOrden = ordenes.obtenerNroOrden();
+
+  const prodHtml = productos.map((elem) => `<li>${elem.nombre} x ${elem.cantidad}</li>\n`);
+  const precioTotal = calcularPrecio(productos);
+
+  const mensaje = {
+    from: `<${mail.mail}>`,
+    to: `<${email}>`,
+    subject: `Orden de compra #${nroOrden}`,
+    html:
+    `<ul>
+      ${prodHtml}
+    </ul>
+    <span>Total: ${precioTotal}</span>`,
+  };
+
+  await transporter.sendMail(mensaje);
+  await carrito.eliminarPorEmail(email);
+
+  ctx.status = 200;
+  ctx.body = {
+    status: 'Orden creada exitosamente',
   };
 });
 

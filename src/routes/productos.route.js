@@ -1,18 +1,37 @@
-const Router = require('koa-router');
-const { productos } = require('../controllers');
+import Router from 'koa-router';
+import controllers from '../controllers';
 
-const productosRouter = new Router({
+const { productos } = controllers;
+const router = new Router({
   prefix: '/productos',
 });
 
-productosRouter.get('', async (ctx) => {
+router.get('/', async (ctx) => {
   ctx.status = 200;
   ctx.body = {
     status: 'Obtener productos',
   };
 });
 
-productosRouter.get('/:categoria', async (ctx) => {
+router.get('/:id', async (ctx) => {
+  const { id } = ctx.params;
+
+  const producto = productos.obtener(id, '-_id -__v');
+
+  if (producto) {
+    ctx.status = 200;
+    ctx.body = {
+      producto,
+    };
+  } else {
+    ctx.status = 404;
+    ctx.body = {
+      status: 'Producto solicitado no existe',
+    };
+  }
+});
+
+router.get('/:categoria', async (ctx) => {
   const { categoria } = ctx.params;
 
   const prods = await productos.obtenerPorCategoria(categoria);
@@ -23,4 +42,4 @@ productosRouter.get('/:categoria', async (ctx) => {
   };
 });
 
-module.exports = productosRouter;
+export default router;

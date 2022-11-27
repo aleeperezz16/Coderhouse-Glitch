@@ -63,4 +63,15 @@ export default class CarritoMongo extends BaseController {
       await this.client.disconnect();
     }
   }
+
+  async eliminarPorEmail(email) {
+    try {
+      await this.client.connect();
+      return await this.collection.findOneAndDelete({ email });
+    } catch (error) {
+      throw new Error(`Error al eliminar el carrito con email: ${email}. ${error}`);
+    } finally {
+      await this.client.disconnect();
+    }
+  }
 }

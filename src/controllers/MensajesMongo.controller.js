@@ -30,4 +30,15 @@ export default class MensajesMongo extends BaseController {
       await this.client.disconnect();
     }
   }
+
+  async obtenerTodos() {
+    try {
+      await this.client.connect();
+      return await this.collection.find();
+    } catch (error) {
+      throw new Error(`Error al obtener todos los mensajes. ${error}`);
+    } finally {
+      await this.client.disconnect();
+    }
+  }
 }
