@@ -7,9 +7,9 @@ const io = new Server();
 const chat = io.of('/chat');
 
 chat.on('connection', (socket) => {
-  socket.on('mensaje_usuario', (data) => {
+  socket.on('mensaje_usuario', async (data) => {
     const { email, mensaje } = data;
-    mensajes.guardar({
+    await mensajes.guardar({
       email,
       tipo: 'usuario',
       mensaje,
@@ -17,9 +17,9 @@ chat.on('connection', (socket) => {
     chat.emit('mensaje_usuario', data);
   });
 
-  socket.on('mensaje_sistema', (data) => {
+  socket.on('mensaje_sistema', async (data) => {
     const { email, mensaje } = data;
-    mensajes.guardar({
+    await mensajes.guardar({
       email,
       tipo: 'sistema',
       mensaje,

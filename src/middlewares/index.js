@@ -1,5 +1,3 @@
-import { auth, authLogin, authJwt } from './auth.middleware';
+import * as authorization from './auth.middleware';
 
-export {
-  auth, authLogin, authJwt,
-};
+export default authorization;

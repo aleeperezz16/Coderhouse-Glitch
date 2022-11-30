@@ -34,6 +34,7 @@ export default class ProductosMongo extends BaseController {
   async obtenerPorCategoria(categoria) {
     try {
       await this.client.connect();
+      return await this.collection.find({ categoria });
     } catch (error) {
       throw new Error(`Error al obtener productos por categoria: ${categoria}. ${error}`);
     } finally {

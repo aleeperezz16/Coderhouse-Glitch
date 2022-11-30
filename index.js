@@ -3,9 +3,9 @@ import koaPassport from 'koa-passport';
 import session from 'koa-session';
 import { koaBody } from 'koa-body';
 import { createServer } from 'http';
+import koaRoutes from './src/utils/routes.util';
 import io from './src/utils/socket.io.util';
 import { auth, server as srv } from './src/config';
-import { carrito, chat, home } from './src/routes';
 
 import './src/utils/passport.util';
 
@@ -24,9 +24,7 @@ app.use(koaBody());
 app.use(koaPassport.initialize());
 app.use(koaPassport.session());
 
-app.use(home.routes());
-app.use(carrito.routes());
-app.use(chat.routes());
+app.use(koaRoutes());
 
 server.listen(srv.port, () => {
   console.log('Servidor corriendo en puerto', srv.port);

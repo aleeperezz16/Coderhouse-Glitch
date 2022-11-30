@@ -1,29 +1,30 @@
 import Router from 'koa-router';
 import controllers from '../controllers';
-import { auth } from '../middlewares';
+import authorization from '../middlewares';
 
 const { mensajes } = controllers;
+const { auth } = authorization;
 
 const router = new Router({
   prefix: '/chat',
 });
 
 router.get('/', auth, async (ctx) => {
-  const msjs = mensajes.obtenerTodos();
+  const chat = await mensajes.obtenerTodos();
 
   ctx.status = 200;
   ctx.body = {
-    msjs,
+    chat,
   };
 });
 
 router.get('/:email', auth, async (ctx) => {
   const { email } = ctx.params;
-  const msjs = mensajes.obtener(email);
+  const chat = await mensajes.obtener(email);
 
   ctx.status = 200;
   ctx.body = {
-    msjs,
+    chat,
   };
 });
 

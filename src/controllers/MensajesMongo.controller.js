@@ -23,7 +23,7 @@ export default class MensajesMongo extends BaseController {
   async obtener(email) {
     try {
       await this.client.connect();
-      return await this.collection.find({ email });
+      return await this.collection.find({ email }, '-_id -__v');
     } catch (error) {
       throw new Error(`Error al obtener los mensajes de email: ${email}. ${error}`);
     } finally {
@@ -34,7 +34,7 @@ export default class MensajesMongo extends BaseController {
   async obtenerTodos() {
     try {
       await this.client.connect();
-      return await this.collection.find();
+      return await this.collection.find({}, '-_id -__v');
     } catch (error) {
       throw new Error(`Error al obtener todos los mensajes. ${error}`);
     } finally {
